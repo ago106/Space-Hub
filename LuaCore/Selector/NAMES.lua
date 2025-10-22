@@ -1,4 +1,4 @@
-print("[Space Hub]: Loaded IDs list of scripts.")
+print("[Space Hub]: Loaded NAMES list of scripts.")
 local Names = {
     ["BABFT"]            = "https://raw.githubusercontent.com/ago106/SpaceHub/refs/heads/main/Scripts/BABFT.lua",                       -- BABFT
     ["BGSI"]             = "https://raw.githubusercontent.com/ago106/SpaceHub/refs/heads/main/Scripts/BGSI.lua",                        -- Bubble gum simulator infinity
