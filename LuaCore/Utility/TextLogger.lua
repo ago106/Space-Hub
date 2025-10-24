@@ -1,6 +1,6 @@
-local Maid = loadstring(game:HttpGet("https://raw.githubusercontent.com/AccountBurner/Utility/refs/heads/main/Maid.lua"))();
-local Signal = loadstring(game:HttpGet("https://raw.githubusercontent.com/AccountBurner/Utility/refs/heads/main/Signal"))();
-local Services = loadstring(game:HttpGet("https://raw.githubusercontent.com/AccountBurner/Utility/refs/heads/main/Services"))();
+local Maid = loadstring(game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/LuaCore/Utility/Maid.lua"))();
+local Signal = loadstring(game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/LuaCore/Utility/Signal"))();
+local Services = loadstring(game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/LuaCore/Utility/Services"))();
 
 local TweenService, CoreGui, UserInputService, GuiService, HttpService = Services:Get('TweenService', 'CoreGui', 'UserInputService', 'GuiService', 'HttpService');
 
