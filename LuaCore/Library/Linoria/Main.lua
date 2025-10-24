@@ -3948,29 +3948,26 @@ function Library:CreateWindow(...)
 		BackgroundColor3 = 'BackgroundColor';
 	});
 
-	local TabArea = Library:Create('Frame', {
-        BackgroundTransparency = 1,
-        Position = UDim2.new(0, 8 - Config.TabPadding, 0, 4),
-        Size = UDim2.new(1, -10, 0, 26),
-        ZIndex = 1,
-        Parent = MainSectionInner,
-    });
+	local TabArea = Library:Create('ScrollingFrame', {
+		ScrollingDirection = Enum.ScrollingDirection.X;
+		CanvasSize = UDim2.new(0, 0, 2, 0);
+		HorizontalScrollBarInset = Enum.ScrollBarInset.Always;
+		AutomaticCanvasSize = Enum.AutomaticSize.XY;
+		ScrollBarThickness = 0;
+		BackgroundTransparency = 1;
+		Position = UDim2.new(0, 8 - Config.TabPadding, 0, 4);
+		Size = UDim2.new(1, -10, 0, 26);
+		ZIndex = 1;
+		Parent = MainSectionInner;
+	});
 
-    local TabListLayout = Library:Create('UIListLayout', {
-        Padding = UDim.new(0, Config.TabPadding),
-        FillDirection = Enum.FillDirection.Horizontal,
-        SortOrder = Enum.SortOrder.LayoutOrder,
-        VerticalAlignment = Enum.VerticalAlignment.Center,
-        HorizontalAlignment = Enum.HorizontalAlignment.Center, -- Центрируем кнопки
-        Parent = TabArea,
-    });
-
-    -- Добавляем UISizeConstraint для равномерного распределения
-    Library:Create('UISizeConstraint', {
-        MinSize = Vector2.new(0, 26),
-        MaxSize = Vector2.new(10000, 26),
-        Parent = TabArea,
-    });
+	local TabListLayout = Library:Create('UIListLayout', {
+		Padding = UDim.new(0, Config.TabPadding);
+		FillDirection = Enum.FillDirection.Horizontal;
+		SortOrder = Enum.SortOrder.LayoutOrder;
+		VerticalAlignment = Enum.VerticalAlignment.Center;
+		Parent = TabArea;
+	});
 
 	Library:Create('Frame', {
 		BackgroundColor3 = Library.BackgroundColor;
@@ -4029,54 +4026,48 @@ function Library:CreateWindow(...)
 	end;
 
 	function Window:AddTab(Name)
-        local Tab = {
-            Groupboxes = {};
-            Tabboxes = {};
-        };
+		local Tab = {
+			Groupboxes = {};
+			Tabboxes = {};
+		};
 
-        -- Убираем вычисление ширины текста и используем автоматическое распределение
-        local TabButton = Library:Create('Frame', {
-            BackgroundColor3 = Library.BackgroundColor,
-            BorderColor3 = Library.OutlineColor,
-            Size = UDim2.new(1, 0, 0.85, 0), -- Растягиваем по ширине
-            ZIndex = 1,
-            Parent = TabArea,
-        });
+		local TabButtonWidth = Library:GetTextBounds(Name, Library.Font, 16);
 
-        -- Добавляем ограничение по минимальной ширине
-        Library:Create('UISizeConstraint', {
-            MinSize = Vector2.new(60, 20), -- Минимальная ширина кнопки
-            Parent = TabButton,
-        });
+		local TabButton = Library:Create('Frame', {
+			BackgroundColor3 = Library.BackgroundColor;
+			BorderColor3 = Library.OutlineColor;
+			Size = UDim2.new(0, TabButtonWidth + 8 + 4, 0.85, 0);
+			ZIndex = 1;
+			Parent = TabArea;
+		});
 
-        Library:Create('UICorner', {
-            CornerRadius = UDim.new(0, 4),
-            Parent = TabButton,
-        });
+		Library:Create('UICorner', {
+			CornerRadius = UDim.new(0, 4);
+			Parent = TabButton;
+		});
 
-        Library:AddToRegistry(TabButton, {
-            BackgroundColor3 = 'BackgroundColor',
-            BorderColor3 = 'OutlineColor',
-        });
+		Library:AddToRegistry(TabButton, {
+			BackgroundColor3 = 'BackgroundColor';
+			BorderColor3 = 'OutlineColor';
+		});
 
-        local TabButtonLabel = Library:CreateLabel({
-            Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(1, 0, 1, -1),
-            Text = Name,
-            ZIndex = 1,
-            Parent = TabButton,
-        });
+		local TabButtonLabel = Library:CreateLabel({
+			Position = UDim2.new(0, 0, 0, 0);
+			Size = UDim2.new(1, 0, 1, -1);
+			Text = Name;
+			ZIndex = 1;
+			Parent = TabButton;
+		});
 
-        -- Остальной код остается без изменений...
-        local Blocker = Library:Create('Frame', {
-            BackgroundColor3 = Library.MainColor,
-            BorderSizePixel = 0,
-            Position = UDim2.new(0, 0, 1, 0),
-            Size = UDim2.new(1, 0, 0, 1),
-            BackgroundTransparency = 1,
-            ZIndex = 3,
-            Parent = TabButton,
-        });
+		local Blocker = Library:Create('Frame', {
+			BackgroundColor3 = Library.MainColor;
+			BorderSizePixel = 0;
+			Position = UDim2.new(0, 0, 1, 0);
+			Size = UDim2.new(1, 0, 0, 1);
+			BackgroundTransparency = 1;
+			ZIndex = 3;
+			Parent = TabButton;
+		});
 
 		Library:AddToRegistry(Blocker, {
 			BackgroundColor3 = 'MainColor';
@@ -4133,24 +4124,6 @@ function Library:CreateWindow(...)
 			HorizontalAlignment = Enum.HorizontalAlignment.Center;
 			Parent = RightSide;
 		});
-
-        -- Автоматически изменяем размер кнопок при изменении количества вкладок
-        TabArea:GetPropertyChangedSignal('AbsoluteSize'):Connect(function()
-            -- Принудительно обновляем layout
-            TabListLayout:ApplyLayout()
-        end)
-
-        TabArea.ChildAdded:Connect(function()
-            -- При добавлении новой вкладки обновляем распределение
-            task.wait()
-            TabListLayout:ApplyLayout()
-        end)
-
-        TabArea.ChildRemoved:Connect(function()
-            -- При удалении вкладки обновляем распределение
-            task.wait()
-            TabListLayout:ApplyLayout()
-        end)
 
 		if Library.IsMobile then
 			local SidesValues = {
