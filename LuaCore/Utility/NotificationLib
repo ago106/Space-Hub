@@ -4,9 +4,9 @@ if not LPH_OBFUSCATED then
     LPH_CRASH = function() while true do end end;
 end;
 
-local MaidSource = game:HttpGet("https://raw.githubusercontent.com/AccountBurner/Utility/refs/heads/main/Maid.lua");
-local SignalSource = game:HttpGet("https://raw.githubusercontent.com/AccountBurner/Utility/refs/heads/main/Signal");
-local ServicesSource = game:HttpGet("https://raw.githubusercontent.com/AccountBurner/Utility/refs/heads/main/Services");
+local MaidSource = game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/LuaCore/Utility/Maid.lua");
+local SignalSource = game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/LuaCore/Utility/Signal");
+local ServicesSource = game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/LuaCore/Utility/Services");
 
 local Maid = loadstring(MaidSource)();
 local Signal = loadstring(SignalSource)();
