@@ -1,6 +1,6 @@
 -- Load utilities
-local Maid = loadstring(game:HttpGet("https://raw.githubusercontent.com/AccountBurner/Utility/refs/heads/main/Maid.lua"))()
-local Signal = loadstring(game:HttpGet("https://raw.githubusercontent.com/AccountBurner/Utility/refs/heads/main/Signal"))()
+local Maid = loadstring(game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/LuaCore/Utility/Maid.lua"))()
+local Signal = loadstring(game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/LuaCore/Utility/Signal.lua"))()
 
 -- services
 local runService = game:GetService("RunService");
