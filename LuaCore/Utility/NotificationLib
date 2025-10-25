@@ -389,4 +389,4 @@ Notifications:Warning("Warning", "Click me!", 15, function()
     print("Notification clicked!")
 end)]]
 
-return NotificationSystem;
+return NotificationSystem.new();
