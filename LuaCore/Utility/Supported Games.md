@@ -4,8 +4,9 @@
 Press Ctrl + F to see if there is a suitable game.
 If not, then write in my Discord server which game to add the script to.
 
-Дискорд - https://discord.gg/ktC6dNVxDC
 Discord - https://discord.gg/ktC6dNVxDC
+
+Telegram - https://t.me/RBscr1pts
 
 Total Games: 29
 
