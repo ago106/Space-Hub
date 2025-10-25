@@ -20,40 +20,48 @@ local GetHUI = gethui or (function() return CoreGui end);
 local NotificationSystem = {};
 NotificationSystem.__index = NotificationSystem;
 
-local NOTIFICATION_PADDING = 10;
-local NOTIFICATION_GAP = 5;
+local NOTIFICATION_PADDING = 15;
+local NOTIFICATION_GAP = 10;
 local NOTIFICATION_DURATION = 5;
-local NOTIFICATION_WIDTH = 300;
-local NOTIFICATION_HEIGHT = 80;
-local NOTIFICATION_CORNER_RADIUS = 4;
+local NOTIFICATION_WIDTH = 350;
+local NOTIFICATION_HEIGHT = 100;
+local NOTIFICATION_CORNER_RADIUS = 8;
 local TWEEN_INFO = TweenInfo.new(0.3, Enum.EasingStyle.Quint);
+local EXIT_TWEEN_INFO = TweenInfo.new(0.4, Enum.EasingStyle.Quad);
 local PROGRESS_TWEEN_INFO = TweenInfo.new(NOTIFICATION_DURATION, Enum.EasingStyle.Linear);
+local MAX_NOTIFICATIONS = 15;
 
 local function generateRandomString()
     local chars = {};
     for i = 1, math.random(8, 16) do
         chars[i] = string.char(math.random(97, 122));
     end;
+    --print(table.concat(chars))
     return table.concat(chars);
 end;
 
 local THEME = {
-    Background = Color3.fromRGB(30, 30, 30),
-    Text = Color3.fromRGB(255, 255, 255),
+    Background = Color3.fromRGB(20, 20, 20),
+    Text = Color3.fromRGB(240, 240, 240),
     SubText = Color3.fromRGB(180, 180, 180),
+    Divider = Color3.fromRGB(40, 40, 40),
     
     Types = {
         Info = {
-            Color = Color3.fromRGB(78, 131, 255)
+            Color = Color3.fromRGB(52, 152, 219),
+            Icon = "ℹ"
         },
         Success = {
-            Color = Color3.fromRGB(85, 170, 127)
+            Color = Color3.fromRGB(46, 204, 113),
+            Icon = "✓"
         },
         Warning = {
-            Color = Color3.fromRGB(245, 179, 66)
+            Color = Color3.fromRGB(241, 196, 15),
+            Icon = "⚠"
         },
         Error = {
-            Color = Color3.fromRGB(235, 87, 87)
+            Color = Color3.fromRGB(231, 76, 60),
+            Icon = "✕"
         }
     }
 };
@@ -70,19 +78,6 @@ Container.Parent = GetHUI();
 
 local Notification = {};
 Notification.__index = Notification;
-
-local function createIconText(notifType)
-    if notifType == "Info" then
-        return "ℹ";
-    elseif notifType == "Success" then
-        return "✓";
-    elseif notifType == "Warning" then
-        return "⚠";
-    elseif notifType == "Error" then
-        return "X";
-    end;
-    return "";
-end;
 
 function Notification.new(options)
     local self = setmetatable({}, Notification);
@@ -125,81 +120,93 @@ function Notification:_init()
     self.Frame = Instance.new("Frame");
     self.Frame.Name = generateRandomString();
     self.Frame.Size = UDim2.new(0, width, 0, height);
-    self.Frame.Position = UDim2.new(0, NOTIFICATION_PADDING, 1, NOTIFICATION_PADDING);
+    self.Frame.Position = UDim2.new(1, NOTIFICATION_PADDING, 1, NOTIFICATION_PADDING);
     self.Frame.BackgroundColor3 = THEME.Background;
     self.Frame.BorderSizePixel = 0;
-    self.Frame.AnchorPoint = Vector2.new(0, 1);
+    self.Frame.AnchorPoint = Vector2.new(1, 1);
+    self.Frame.ClipsDescendants = true;
+    self.Frame.ZIndex = 100;
     self.Frame.Parent = Container;
     
     local corner = Instance.new("UICorner");
     corner.CornerRadius = UDim.new(0, NOTIFICATION_CORNER_RADIUS);
     corner.Parent = self.Frame;
     
-    self.Icon = Instance.new("TextLabel");
-    self.Icon.Name = generateRandomString();
-    self.Icon.Size = UDim2.new(0, 24 * (height/NOTIFICATION_HEIGHT), 0, 24 * (height/NOTIFICATION_HEIGHT));
-    self.Icon.Position = UDim2.new(0, 16 * (width/NOTIFICATION_WIDTH), 0.5, 0);
-    self.Icon.AnchorPoint = Vector2.new(0, 0.5);
-    self.Icon.BackgroundTransparency = 1;
-    self.Icon.Text = createIconText(self.Type);
-    self.Icon.Font = Enum.Font.GothamBold;
-    self.Icon.TextSize = 20 * (height/NOTIFICATION_HEIGHT);
-    self.Icon.TextColor3 = typeInfo.Color;
-    self.Icon.Parent = self.Frame;
+    self.AccentBar = Instance.new("Frame");
+    self.AccentBar.Name = generateRandomString();
+    self.AccentBar.Size = UDim2.new(0, 4, 1, -8);
+    self.AccentBar.Position = UDim2.new(0, 4, 0, 4);
+    self.AccentBar.BackgroundColor3 = typeInfo.Color;
+    self.AccentBar.BorderSizePixel = 0;
+    self.AccentBar.ZIndex = self.Frame.ZIndex + 1;
     
-    local iconSize = self.Icon.Size.X.Offset;
+    local accentCorner = Instance.new("UICorner");
+    accentCorner.CornerRadius = UDim.new(0, 2);
+    accentCorner.Parent = self.AccentBar;
+    self.AccentBar.Parent = self.Frame;
     
     self.TitleLabel = Instance.new("TextLabel");
     self.TitleLabel.Name = generateRandomString();
-    self.TitleLabel.Size = UDim2.new(1, -iconSize - 50, 0, 20 * (height/NOTIFICATION_HEIGHT));
-    self.TitleLabel.Position = UDim2.new(0, iconSize + 30, 0, 16 * (height/NOTIFICATION_HEIGHT));
+    self.TitleLabel.Size = UDim2.new(1, -24, 0, 20);
+    self.TitleLabel.Position = UDim2.new(0, 12, 0, 8);
     self.TitleLabel.BackgroundTransparency = 1;
-    self.TitleLabel.Text = self.Title;
+    self.TitleLabel.Text = string.upper(self.Title);
     self.TitleLabel.Font = Enum.Font.GothamBold;
-    self.TitleLabel.TextSize = 14 * (height/NOTIFICATION_HEIGHT);
-    self.TitleLabel.TextColor3 = THEME.Text;
-    self.TitleLabel.TextXAlignment = Enum.TextXAlignment.Left;
+    self.TitleLabel.TextSize = 16;
+    self.TitleLabel.TextColor3 = typeInfo.Color;
+    self.TitleLabel.TextXAlignment = Enum.TextXAlignment.Center;
+    self.TitleLabel.ZIndex = self.Frame.ZIndex + 1;
     self.TitleLabel.Parent = self.Frame;
+    
+    self.Divider = Instance.new("Frame");
+    self.Divider.Name = generateRandomString();
+    self.Divider.Size = UDim2.new(1, -16, 0, 1);
+    self.Divider.Position = UDim2.new(0, 8, 0, 32);
+    self.Divider.BackgroundColor3 = THEME.Divider;
+    self.Divider.BorderSizePixel = 0;
+    self.Divider.ZIndex = self.Frame.ZIndex + 1;
+    self.Divider.Parent = self.Frame;
     
     self.TextLabel = Instance.new("TextLabel");
     self.TextLabel.Name = generateRandomString();
-    self.TextLabel.Size = UDim2.new(1, -iconSize - 50, 0, 30 * (height/NOTIFICATION_HEIGHT));
-    self.TextLabel.Position = UDim2.new(0, iconSize + 30, 0, 36 * (height/NOTIFICATION_HEIGHT));
+    self.TextLabel.Size = UDim2.new(1, -24, 1, -44);
+    self.TextLabel.Position = UDim2.new(0, 12, 0, 36);
     self.TextLabel.BackgroundTransparency = 1;
     self.TextLabel.Text = self.Text;
     self.TextLabel.Font = Enum.Font.Gotham;
-    self.TextLabel.TextSize = 14 * (height/NOTIFICATION_HEIGHT);
+    self.TextLabel.TextSize = 13;
     self.TextLabel.TextColor3 = THEME.SubText;
     self.TextLabel.TextXAlignment = Enum.TextXAlignment.Left;
+    self.TextLabel.TextYAlignment = Enum.TextYAlignment.Top;
     self.TextLabel.TextWrapped = true;
+    self.TextLabel.ZIndex = self.Frame.ZIndex + 1;
     self.TextLabel.Parent = self.Frame;
-    
-    self.CloseButton = Instance.new("TextButton");
-    self.CloseButton.Name = generateRandomString();
-    self.CloseButton.Size = UDim2.new(0, 16 * (height/NOTIFICATION_HEIGHT), 0, 16 * (height/NOTIFICATION_HEIGHT));
-    self.CloseButton.Position = UDim2.new(1, -24 * (width/NOTIFICATION_WIDTH), 0, 16 * (height/NOTIFICATION_HEIGHT));
-    self.CloseButton.BackgroundTransparency = 1;
-    self.CloseButton.Text = "X";
-    self.CloseButton.Font = Enum.Font.Gotham;
-    self.CloseButton.TextSize = 14 * (height/NOTIFICATION_HEIGHT);
-    self.CloseButton.TextColor3 = THEME.SubText;
-    self.CloseButton.Parent = self.Frame;
-    
-    self.ProgressContainer = Instance.new("Frame");
-    self.ProgressContainer.Name = generateRandomString();
-    self.ProgressContainer.Size = UDim2.new(1, 0, 0, 4);
-    self.ProgressContainer.Position = UDim2.new(0, 0, 1, -4);
-    self.ProgressContainer.BackgroundTransparency = 0.9;
-    self.ProgressContainer.BackgroundColor3 = Color3.fromRGB(100, 100, 100);
-    self.ProgressContainer.BorderSizePixel = 0;
-    self.ProgressContainer.Parent = self.Frame;
     
     self.ProgressBar = Instance.new("Frame");
     self.ProgressBar.Name = generateRandomString();
-    self.ProgressBar.Size = UDim2.new(1, 0, 1, 0);
+    self.ProgressBar.Size = UDim2.new(1, -8, 0, 2);
+    self.ProgressBar.Position = UDim2.new(0, 4, 1, -4);
     self.ProgressBar.BackgroundColor3 = typeInfo.Color;
     self.ProgressBar.BorderSizePixel = 0;
-    self.ProgressBar.Parent = self.ProgressContainer;
+    self.ProgressBar.ZIndex = self.Frame.ZIndex + 1;
+    self.ProgressBar.AnchorPoint = Vector2.new(0, 1);
+    
+    local progressCorner = Instance.new("UICorner");
+    progressCorner.CornerRadius = UDim.new(0, 1);
+    progressCorner.Parent = self.ProgressBar;
+    self.ProgressBar.Parent = self.Frame;
+    
+    self.CloseButton = Instance.new("TextButton");
+    self.CloseButton.Name = generateRandomString();
+    self.CloseButton.Size = UDim2.new(0, 16, 0, 16);
+    self.CloseButton.Position = UDim2.new(1, -24, 0, 8);
+    self.CloseButton.BackgroundTransparency = 1;
+    self.CloseButton.Text = "✕";
+    self.CloseButton.Font = Enum.Font.Gotham;
+    self.CloseButton.TextSize = 14;
+    self.CloseButton.TextColor3 = THEME.SubText;
+    self.CloseButton.ZIndex = self.Frame.ZIndex + 1;
+    self.CloseButton.Parent = self.Frame;
     
     self._maid:AddTask(self.CloseButton.MouseButton1Click:Connect(function()
         self:Destroy();
@@ -207,12 +214,21 @@ function Notification:_init()
     
     table.insert(ActiveNotifications, self);
     
+    if #ActiveNotifications > MAX_NOTIFICATIONS then
+        ActiveNotifications[1]:Destroy();
+    end;
+    
     self:UpdatePositions();
     
-    local targetPosition = UDim2.new(0, NOTIFICATION_PADDING, 1, -NOTIFICATION_PADDING);
-    TweenService:Create(self.Frame, TWEEN_INFO, {Position = targetPosition, AnchorPoint = Vector2.new(0, 1)}):Play();
+    local targetPosition = self:CalculateTargetPosition();
+    local appearTween = TweenService:Create(self.Frame, TWEEN_INFO, {
+        Position = targetPosition
+    });
+    appearTween:Play();
     
-    local progressTween = TweenService:Create(self.ProgressBar, PROGRESS_TWEEN_INFO, {Size = UDim2.new(0, 0, 1, 0)});
+    local progressTween = TweenService:Create(self.ProgressBar, PROGRESS_TWEEN_INFO, {
+        Size = UDim2.new(0, 0, 0, 2)
+    });
     progressTween:Play();
     
     self._maid:AddTask(progressTween.Completed:Connect(function()
@@ -227,6 +243,7 @@ function Notification:_init()
         self.ClickableArea.Position = UDim2.new(0, 0, 0, 0);
         self.ClickableArea.BackgroundTransparency = 1;
         self.ClickableArea.Text = "";
+        self.ClickableArea.ZIndex = self.Frame.ZIndex;
         self.ClickableArea.Parent = self.Frame;
         
         self._maid:AddTask(self.ClickableArea.MouseButton1Click:Connect(function()
@@ -238,29 +255,37 @@ function Notification:_init()
     return self;
 end;
 
+function Notification:CalculateTargetPosition()
+    local totalHeight = 0;
+    
+    for i, notif in ipairs(ActiveNotifications) do
+        if notif == self then
+            break
+        end
+        if not notif._destroyed then
+            local _, height = notif:GetScaledSize();
+            totalHeight = totalHeight + height + NOTIFICATION_GAP;
+        end
+    end
+    
+    return UDim2.new(1, -NOTIFICATION_PADDING, 1, -NOTIFICATION_PADDING - totalHeight);
+end;
+
 function Notification:UpdatePositions()
     local totalHeight = 0;
     
-    for i = #ActiveNotifications, 1, -1 do
-        local notif = ActiveNotifications[i];
-        if notif._destroyed then continue end;
-        
-        local width, height = notif:GetScaledSize();
-        
-        local newY = -NOTIFICATION_PADDING - totalHeight;
-        local targetPosition = UDim2.new(0, NOTIFICATION_PADDING, 1, newY);
-        
-        if notif == self then
-            notif.originalPosition = targetPosition;
-        else
+    for i, notif in ipairs(ActiveNotifications) do
+        if not notif._destroyed then
+            local _, height = notif:GetScaledSize();
+            local targetPosition = UDim2.new(1, -NOTIFICATION_PADDING, 1, -NOTIFICATION_PADDING - totalHeight);
+            
             TweenService:Create(notif.Frame, TWEEN_INFO, {
-                Position = targetPosition,
-                AnchorPoint = Vector2.new(0, 1)
+                Position = targetPosition
             }):Play();
-        end;
-        
-        totalHeight = totalHeight + height + NOTIFICATION_GAP;
-    end;
+            
+            totalHeight = totalHeight + height + NOTIFICATION_GAP;
+        end
+    end
 end;
 
 function Notification:Destroy()
@@ -269,24 +294,34 @@ function Notification:Destroy()
     
     self.Destroying:Fire();
     
-    local targetPosition = UDim2.new(0.5, 0, 1, NOTIFICATION_PADDING);
-    local tween = TweenService:Create(self.Frame, TWEEN_INFO, {
-        Position = targetPosition,
-        Transparency = 1
+    local exitPosition = UDim2.new(1.5, 0, self.Frame.Position.Y.Scale, self.Frame.Position.Y.Offset);
+    
+    for _, child in ipairs(self.Frame:GetDescendants()) do
+        if child:IsA("TextLabel") or child:IsA("TextButton") then
+            TweenService:Create(child, EXIT_TWEEN_INFO, {
+                TextTransparency = 1
+            }):Play();
+        elseif child:IsA("Frame") then
+            TweenService:Create(child, EXIT_TWEEN_INFO, {
+                BackgroundTransparency = 1
+            }):Play();
+        end
+    end
+    
+    local exitTween = TweenService:Create(self.Frame, EXIT_TWEEN_INFO, {
+        Position = exitPosition,
+        BackgroundTransparency = 1
     });
     
-    tween:Play();
+    exitTween:Play();
     
-    self._maid:AddTask(tween.Completed:Connect(function()
+    self._maid:AddTask(exitTween.Completed:Connect(function()
         local index = table.find(ActiveNotifications, self);
         if index then
             table.remove(ActiveNotifications, index);
         end;
         
-        if #ActiveNotifications > 0 then
-            ActiveNotifications[1]:UpdatePositions();
-        end;
-        
+        self:UpdatePositions();
         self.Frame:Destroy();
         self._maid:Clean();
     end));
@@ -337,11 +372,21 @@ end;
 function NotificationSystem:Destroy()
     self:ClearAll();
     self._maid:Clean();
+    Container:Destroy();
 end;
 
-return NotificationSystem.new();
---[[
-local Notifications = NotificationSystem.new()
-NotificationSystem:Info("Information", "This is an informational message")
-NotificationSystem:Warning("Warning", "This action may cause issues")
-NotificationSystem:Error("Error", "Something went wrong")]]
+--[[local Notifications = NotificationSystem
+
+Notifications:Info("Information", "This is an informational message")
+
+Notifications:Success("Success", "Operation completed successfully")
+
+Notifications:Warning("Warning", "This action may cause issues")
+
+Notifications:Error("Error", "Something went wrong")
+
+Notifications:Warning("Warning", "Click me!", 15, function()
+    print("Notification clicked!")
+end)]]
+
+return NotificationSystem;
