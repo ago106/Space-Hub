@@ -20701,7 +20701,7 @@
 ]]
 -- Starter Screen
 task.spawn(function()
-    if not getgenv().NotStarterScreen then
+    if getgenv().NotStarterScreen ~= true then
         pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/LuaCore/Utility/StarterScreen.lua", true))()
             getgenv().NotStarterScreen = true
@@ -20711,7 +20711,7 @@ end)
 
 -- Notification Service  
 task.spawn(function()
-    if not getgenv().NotNotification then
+    if getgenv().NotNotification ~= true then
         pcall(function()
             getgenv().Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/LuaCore/Utility/NotificationLib", true))()
             getgenv().NotNotification = true
