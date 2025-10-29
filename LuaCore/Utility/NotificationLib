@@ -12,7 +12,7 @@ local Maid = loadstring(MaidSource)();
 local Signal = loadstring(SignalSource)();
 local Services = loadstring(ServicesSource)();
 
-local TweenService, CoreGui, UserInputService, GuiService = Services:Get('TweenService', 'CoreGui', 'UserInputService', 'GuiService');
+local TweenService, CoreGui, UserInputService, GuiService, RunService = Services:Get('TweenService', 'CoreGui', 'UserInputService', 'GuiService', 'RunService');
 
 local ProtectGui = protectgui or (syn and syn.protect_gui) or (function() end);
 local GetHUI = gethui or (function() return CoreGui end);
@@ -30,6 +30,8 @@ local TWEEN_INFO = TweenInfo.new(0.3, Enum.EasingStyle.Quint);
 local EXIT_TWEEN_INFO = TweenInfo.new(0.4, Enum.EasingStyle.Quad);
 local PROGRESS_TWEEN_INFO = TweenInfo.new(NOTIFICATION_DURATION, Enum.EasingStyle.Linear);
 local MAX_NOTIFICATIONS = 15;
+
+local IS_MOBILE = UserInputService.TouchEnabled and not UserInputService.MouseEnabled and not UserInputService.KeyboardEnabled
 
 local function generateRandomString()
     local chars = {};
@@ -73,6 +75,12 @@ Container.Name = generateRandomString();
 Container.ResetOnSpawn = false;
 Container.ZIndexBehavior = Enum.ZIndexBehavior.Sibling;
 Container.Enabled = true;
+
+if IS_MOBILE then
+    Container.IgnoreGuiInset = true
+    Container.ClipToDeviceSafeArea = false
+end
+
 ProtectGui(Container);
 Container.Parent = GetHUI();
 
@@ -99,17 +107,27 @@ end;
 function Notification:GetScreenSize()
     local viewport = workspace.CurrentCamera.ViewportSize;
     local insets = GuiService:GetGuiInset();
-    return viewport.X, viewport.Y - insets.Y;
+    
+    if IS_MOBILE then
+        return viewport.X, viewport.Y
+    else
+        return viewport.X, viewport.Y - insets.Y;
+    end
 end;
 
 function Notification:GetScaledSize()
     local screenWidth, screenHeight = self:GetScreenSize();
-    local scale = math.min(screenWidth / 1920, 1);
     
-    local width = math.min(NOTIFICATION_WIDTH * scale, screenWidth * 0.9);
-    local height = NOTIFICATION_HEIGHT * scale;
-    
-    return width, height;
+    if IS_MOBILE then
+        local width = math.min(NOTIFICATION_WIDTH, screenWidth * 0.9);
+        local height = NOTIFICATION_HEIGHT;
+        return width, height;
+    else
+        local scale = math.min(screenWidth / 1920, 1);
+        local width = math.min(NOTIFICATION_WIDTH * scale, screenWidth * 0.9);
+        local height = NOTIFICATION_HEIGHT * scale;
+        return width, height;
+    end
 end;
 
 function Notification:_init()
@@ -126,6 +144,11 @@ function Notification:_init()
     self.Frame.AnchorPoint = Vector2.new(1, 1);
     self.Frame.ClipsDescendants = true;
     self.Frame.ZIndex = 100;
+    
+    if IS_MOBILE then
+        self.Frame.ZIndex = 1000
+    end
+    
     self.Frame.Parent = Container;
     
     local corner = Instance.new("UICorner");
@@ -152,7 +175,13 @@ function Notification:_init()
     self.TitleLabel.BackgroundTransparency = 1;
     self.TitleLabel.Text = string.upper(self.Title);
     self.TitleLabel.Font = Enum.Font.GothamBold;
-    self.TitleLabel.TextSize = 16;
+    
+    if IS_MOBILE then
+        self.TitleLabel.TextSize = 18
+    else
+        self.TitleLabel.TextSize = 16
+    end
+    
     self.TitleLabel.TextColor3 = typeInfo.Color;
     self.TitleLabel.TextXAlignment = Enum.TextXAlignment.Center;
     self.TitleLabel.ZIndex = self.Frame.ZIndex + 1;
@@ -174,7 +203,13 @@ function Notification:_init()
     self.TextLabel.BackgroundTransparency = 1;
     self.TextLabel.Text = self.Text;
     self.TextLabel.Font = Enum.Font.Gotham;
-    self.TextLabel.TextSize = 13;
+    
+    if IS_MOBILE then
+        self.TextLabel.TextSize = 15
+    else
+        self.TextLabel.TextSize = 13
+    end
+    
     self.TextLabel.TextColor3 = THEME.SubText;
     self.TextLabel.TextXAlignment = Enum.TextXAlignment.Left;
     self.TextLabel.TextYAlignment = Enum.TextYAlignment.Top;
@@ -198,12 +233,24 @@ function Notification:_init()
     
     self.CloseButton = Instance.new("TextButton");
     self.CloseButton.Name = generateRandomString();
-    self.CloseButton.Size = UDim2.new(0, 16, 0, 16);
+    
+    if IS_MOBILE then
+        self.CloseButton.Size = UDim2.new(0, 24, 0, 24)
+    else
+        self.CloseButton.Size = UDim2.new(0, 16, 0, 16)
+    end
+    
     self.CloseButton.Position = UDim2.new(1, -24, 0, 8);
     self.CloseButton.BackgroundTransparency = 1;
     self.CloseButton.Text = "✕";
     self.CloseButton.Font = Enum.Font.Gotham;
-    self.CloseButton.TextSize = 14;
+    
+    if IS_MOBILE then
+        self.CloseButton.TextSize = 16
+    else
+        self.CloseButton.TextSize = 14
+    end
+    
     self.CloseButton.TextColor3 = THEME.SubText;
     self.CloseButton.ZIndex = self.Frame.ZIndex + 1;
     self.CloseButton.Parent = self.Frame;
@@ -211,6 +258,12 @@ function Notification:_init()
     self._maid:AddTask(self.CloseButton.MouseButton1Click:Connect(function()
         self:Destroy();
     end));
+    
+    if IS_MOBILE then
+        self._maid:AddTask(self.CloseButton.TouchTap:Connect(function()
+            self:Destroy();
+        end));
+    end
     
     table.insert(ActiveNotifications, self);
     
@@ -244,12 +297,24 @@ function Notification:_init()
         self.ClickableArea.BackgroundTransparency = 1;
         self.ClickableArea.Text = "";
         self.ClickableArea.ZIndex = self.Frame.ZIndex;
+        
+        if IS_MOBILE then
+            self.ClickableArea.ZIndex = self.Frame.ZIndex + 10
+        end
+        
         self.ClickableArea.Parent = self.Frame;
         
         self._maid:AddTask(self.ClickableArea.MouseButton1Click:Connect(function()
             self.Callback();
             self:Destroy();
         end));
+        
+        if IS_MOBILE then
+            self._maid:AddTask(self.ClickableArea.TouchTap:Connect(function()
+                self.Callback();
+                self:Destroy();
+            end));
+        end
     end;
     
     return self;
@@ -268,7 +333,11 @@ function Notification:CalculateTargetPosition()
         end
     end
     
-    return UDim2.new(1, -NOTIFICATION_PADDING, 1, -NOTIFICATION_PADDING - totalHeight);
+    if IS_MOBILE then
+        return UDim2.new(1, -NOTIFICATION_PADDING, 1, -NOTIFICATION_PADDING - totalHeight);
+    else
+        return UDim2.new(1, -NOTIFICATION_PADDING, 1, -NOTIFICATION_PADDING - totalHeight);
+    end
 end;
 
 function Notification:UpdatePositions()
