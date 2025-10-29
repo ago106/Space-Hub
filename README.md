@@ -3,7 +3,7 @@
 # 🚀 Space Hub & RBscr1pts
 
 ![Banner](https://img.shields.io/badge/🚀_SPACE_HUB-Your_Roblox_Scripting_Destination-6e40c9?style=for-the-badge&logo=rocket&logoColor=white)
-![Games](https://img.shields.io/badge/🎮_3550+_Games_Supported-8b9dc3?style=for-the-badge&logo=gamepad&logoColor=white)
+![Games](https://img.shields.io/badge/🎮_30+_Games_Supported-8b9dc3?style=for-the-badge&logo=gamepad&logoColor=white)
 ![Version](https://img.shields.io/badge/📌_Version_2025.11.22-6e40c9?style=for-the-badge&logo=star&logoColor=white)
 
 </div>
