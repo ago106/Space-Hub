@@ -28,6 +28,7 @@ local Names = {
     ["FishIt"]           = "https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/Scripts/FishIt.lua",                      -- Fish It 
     ["Grace"]            = "https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/Scripts/Grace.lua",                       -- Grace | Lobby
     ["BuildAZoo"]        = "https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/Scripts/BuildAZoo.Lua",                   -- Build A Zoo
+    ["TDS"]              = "https://raw.githubusercontent.com/ago106/tds-roblox/refs/heads/main/loader.lua",                             -- TDS
     --["Backyard"]         = "",             -- Dig The backyard
     --["Skinwalkers"]      = "",             -- Skinwalkers
     --["Steal A Brainrot"] = "",             -- Steal A Brainrot
