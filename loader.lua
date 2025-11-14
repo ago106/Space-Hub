@@ -20700,14 +20700,6 @@
 
 ]]
 
-if getgenv().NotNotification ~= true then
-	pcall(function()
-		getgenv().Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/LuaCore/Utility/NotificationLib", true))()
-		getgenv().NotNotification = true
-	end)
-end
-
-
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ago106/Space-Hub/refs/heads/main/awfffaw"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Space-RB/Script/refs/heads/main/loader.lua"))()
 			-- v3.5.3c | faster load
